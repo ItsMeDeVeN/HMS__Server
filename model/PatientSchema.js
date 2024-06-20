@@ -13,6 +13,8 @@ const PatientSchema = new mongoose.Schema(
       gender: {type: String,},
       address: {type: String,},
       medicalHistory: {type: String,},
+      role: {type: String,},
+      verified:{type: Boolean,},
     },
     { timestamps: true }
   );

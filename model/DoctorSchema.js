@@ -15,6 +15,8 @@ const DoctorSchema = new mongoose.Schema(
       day: {type: String,},
       timeSlot: {type: String,},
       gender: {type: String,},
+      role: {type: String,},
+      verified:{type: Boolean,},
     },
     { timestamps: true }
   );

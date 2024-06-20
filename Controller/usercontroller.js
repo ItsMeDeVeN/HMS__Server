@@ -40,7 +40,7 @@ const registerpatient = async (req, res) => {
         message: "Email already exists.",
       });
     }
-    const patient = new PatientModel({ ...req.body });
+    const patient = new PatientModel({ ...req.body, role:"Patient", verified: false});
     await patient.save();
 
     res.status(201).send({
@@ -107,7 +107,7 @@ const registerdoctor = async (req, res) => {
         message: "Email already exists.",
       });
     }
-    const doctor = new DoctorModel({ ...req.body });
+    const doctor = new DoctorModel({ ...req.body, role:"Doctor", verified: false });
     await doctor.save();
 
     res.status(201).send({
@@ -208,22 +208,24 @@ const login = async (req, res) => {
 const forgotpassword = async (req, res) => {
   try {
     const { email, newpassword, confirmnewpassword } = req.body;
-    
+
     if (!email || !newpassword || !confirmnewpassword) {
-      return res.status(400).send({ 
-        message: "All fields are compulsory!", 
-        status: 400 
+      return res.status(400).send({
+        message: "All fields are compulsory!",
+        status: 400,
       });
     }
 
     if (newpassword !== confirmnewpassword) {
       return res.status(403).send({
         success: false,
-        message: "Both passwords should match!!!"
+        message: "Both passwords should match!!!",
       });
     }
 
-    const existingUser = await DoctorModel.findOne({ email }) || await PatientModel.findOne({ email });
+    const existingUser =
+      (await DoctorModel.findOne({ email })) ||
+      (await PatientModel.findOne({ email }));
 
     if (!existingUser) {
       return res.status(404).send({
@@ -232,7 +234,7 @@ const forgotpassword = async (req, res) => {
       });
     }
 
-    existingUser.password = newpassword;  
+    existingUser.password = newpassword;
     existingUser.confirmpassword = confirmnewpassword;
     await existingUser.save();
     return res.status(200).send({
@@ -240,7 +242,6 @@ const forgotpassword = async (req, res) => {
       message: "Password updated successfully 🥳🥳!!!",
       user: existingUser,
     });
-
   } catch (error) {
     res.status(500).send({
       success: false,
@@ -251,4 +252,37 @@ const forgotpassword = async (req, res) => {
   }
 };
 
-module.exports = { registerpatient, registerdoctor, login, forgotpassword};
+// const updatedetails = async (req, res) => {
+//     try {
+//       const { email, ...rest } = req.body;
+//       if (!email) {
+//         return res.status(400).send({
+//           success: false,
+//           message: "Email is compulsion while updating!!!!",
+//         });
+//       }
+//       const existingUser = await PatientModel.findOne({ email });
+//       if (!existingUser) {
+//         return res.status(404).send({
+//           success: false,
+//           message: "No such User found",
+//         });
+//       }
+  
+//       await existingUser.save();
+//       res.status(200).send({
+//         success: true,
+//         message: `User details for email:-${email} updated successfully!!!`,
+//         user: existingUser,
+//       });
+//     } catch (error) {
+//       res.status(500).send({
+//         success: false,
+//         message: "Error occured while updating details",
+//         errormsg: error,
+//       });
+//       console.log(error);
+//     }
+//   };
+
+module.exports = { registerpatient, registerdoctor, login, forgotpassword };
