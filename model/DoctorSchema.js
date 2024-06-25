@@ -12,11 +12,16 @@ const DoctorSchema = new mongoose.Schema(
       consultingfee: { type: Number, },
       department: { type: String,   required: true,},
       address: {type: String, },
-      day: {type: String,},
-      timeSlot: {type: String,},
+      availability: [{day: String, timeSlot: String }],
       gender: {type: String,},
       role: {type: String,},
       verified:{type: Boolean,},
+      educationalQualification: {
+        filename: String,  // Store original filename
+        path: String,      // Store file path in server
+        mimetype: String,  // Store MIME type
+        size: Number       // Store file size
+      }
     },
     { timestamps: true }
   );
