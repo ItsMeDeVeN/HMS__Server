@@ -15,6 +15,7 @@ const PatientSchema = new mongoose.Schema(
       medicalHistory: {type: String,},
       role: {type: String,},
       verified:{type: Boolean,},
+      activation_status:{type: Boolean,},
     },
     { timestamps: true }
   );

@@ -1,6 +1,7 @@
 const PatientModel = require("../model/PatientSchema");
 const DoctorModel = require("../model/DoctorSchema");
 const { generateToken } = require("../middleware/middleware");
+const { verified } = require("../admin/Controller/admincontroller");
 // const multer = require("multer"); 
 // const fs = require("fs");
 
@@ -42,7 +43,7 @@ const registerpatient = async (req, res) => {
         message: "Email already exists.",
       });
     }
-    const patient = new PatientModel({ ...req.body, role:"Patient"});
+    const patient = new PatientModel({ ...req.body, role:"Patient", activation_status: true});
     await patient.save();
 
     res.status(201).send({
@@ -109,7 +110,7 @@ const registerdoctor = async (req, res) => {
         message: "Email already exists.",
       });
     }
-    const doctor = new DoctorModel({ ...req.body, role:"Doctor"});
+    const doctor = new DoctorModel({ ...req.body, role:"Doctor",verified: false, activation_status: true});
     await doctor.save();
 
     res.status(201).send({

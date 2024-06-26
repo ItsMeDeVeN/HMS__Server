@@ -85,11 +85,24 @@ const adminlogin = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
   try {
-    const allPatients = await PatientModel.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const allPatients = await PatientModel.find()
+    .skip(skip)
+    .limit(limit);
+
+    const total = await DoctorModel.countDocuments();
+    const totalPages = Math.ceil(total/ limit);
+
     res.status(200).send({
       success: true,
       message: "All Patients fetched successfully",
       patients: allPatients,
+      page,
+      totalPages,
+      total
     });
   } catch (error) {
     res.status(500).send({
@@ -103,11 +116,24 @@ const getAllPatients = async (req, res) => {
 
 const getAllDoctors = async (req, res) => {
   try {
-    const allDoctors = await DoctorModel.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const allDoctors = await DoctorModel.find()
+    .skip(skip)
+    .limit(limit);
+
+    const total = await DoctorModel.countDocuments();
+    const totalPages = Math.ceil(total/ limit);
+
     res.status(200).send({
       success: true,
       message: "All doctors fetched successfully",
       doctors: allDoctors,
+      page,
+      totalPages,
+      total
     });
   } catch (error) {
     res.status(500).send({

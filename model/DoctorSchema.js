@@ -16,6 +16,7 @@ const DoctorSchema = new mongoose.Schema(
       gender: {type: String,},
       role: {type: String,},
       verified:{type: Boolean,},
+      activation_status:{type: Boolean,},
       educationalQualification: {
         filename: String,  // Store original filename
         path: String,      // Store file path in server
