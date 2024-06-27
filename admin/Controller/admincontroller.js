@@ -89,11 +89,17 @@ const getAllPatients = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const allPatients = await PatientModel.find()
+    const searchQuery = req.query.search ? {
+      $or: [
+        { name: { $regex: req.query.search, $options: 'i' } }, // Case-insensitive search on doctor's name
+        ]
+    } : {};
+
+    const allPatients = await PatientModel.find(searchQuery)
     .skip(skip)
     .limit(limit);
 
-    const total = await DoctorModel.countDocuments();
+    const total = await PatientModel.countDocuments();
     const totalPages = Math.ceil(total/ limit);
 
     res.status(200).send({
@@ -120,11 +126,16 @@ const getAllDoctors = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const allDoctors = await DoctorModel.find()
+    const searchQuery = req.query.search ? {
+      $or: [
+        { name: { $regex: req.query.search, $options: 'i' } }, // Case-insensitive search on doctor's name
+        ]
+    } : {};
+    const allDoctors = await DoctorModel.find(searchQuery)
     .skip(skip)
     .limit(limit);
 
-    const total = await DoctorModel.countDocuments();
+    const total = await DoctorModel.countDocuments(searchQuery);
     const totalPages = Math.ceil(total/ limit);
 
     res.status(200).send({
