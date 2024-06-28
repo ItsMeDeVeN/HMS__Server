@@ -1,6 +1,8 @@
 const PatientModel = require("../../model/PatientSchema");
 const DoctorModel = require("../../model/DoctorSchema");
 const AdminModel = require("../model/AdminSchema");
+const {generateToken} = require("../middleware/adminmiddleware")
+
 
 const registeradmin = async (req, res) => {
   try {
@@ -67,11 +69,12 @@ const adminlogin = async (req, res) => {
         message: "Wrong password Entered😵😵",
       });
     }
-
+    const token = generateToken(existingadmin._id, existingadmin.password);
     res.status(200).send({
       success: true,
       message: "Admin Logged in succesfully 🥳🥳",
       admin: existingadmin,
+      token: token
     });
   } catch (error) {
     res.status(500).send({

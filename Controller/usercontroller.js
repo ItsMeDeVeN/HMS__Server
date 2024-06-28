@@ -1,7 +1,7 @@
 const PatientModel = require("../model/PatientSchema");
 const DoctorModel = require("../model/DoctorSchema");
 const { generateToken } = require("../middleware/middleware");
-const { verified } = require("../admin/Controller/admincontroller");
+// const { verified } = require("../admin/Controller/admincontroller");
 // const multer = require("multer"); 
 // const fs = require("fs");
 
@@ -141,15 +141,16 @@ const login = async (req, res) => {
         .status(400)
         .send({ message: "Password is a compulsion!!", status: 400 });
     }
+
+
     const existinguser = await DoctorModel.findOne({ email });
     if (existinguser) {
       try {
-        role = "Doctor";
         if (existinguser.password !== password) {
           return res.status(403).send({
             success: false,
             message: "Wrong password Entered😵😵",
-            role: role,
+            role: existinguser.role,
           });
         }
         const token = generateToken(existinguser._id, existinguser.name);
@@ -157,7 +158,6 @@ const login = async (req, res) => {
           success: true,
           message: "Doctor Logged in succesfully 🥳🥳",
           user: existinguser,
-          role: role,
           token: token,
         });
       } catch (error) {
@@ -173,12 +173,11 @@ const login = async (req, res) => {
       const existinguser = await PatientModel.findOne({ email });
       if (existinguser) {
         try {
-          role = "Patient";
           if (existinguser.password !== password) {
             return res.status(403).send({
               success: false,
               message: "Wrong password Entered😵😵",
-              role: role,
+              role: existinguser.role,
             });
           }
           const token = generateToken(existinguser._id, existinguser.name);
@@ -186,7 +185,6 @@ const login = async (req, res) => {
             success: true,
             message: "Patient Logged in succesfully 🥳🥳",
             user: existinguser,
-            role: role,
             token: token,
           });
         } catch (error) {
@@ -194,7 +192,7 @@ const login = async (req, res) => {
             success: false,
             message: "Error occured while logging",
             errormsg: error,
-            role: role,
+            role: existinguser.role,
           });
           console.log(error);
         }
@@ -205,7 +203,12 @@ const login = async (req, res) => {
         });
       }
     }
-  } catch {}
+  } catch(error){
+    return res.status(500).send({
+      success: false,
+      error: error,
+    })
+  }
 };
 
 const forgotpassword = async (req, res) => {
