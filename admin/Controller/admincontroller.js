@@ -102,7 +102,7 @@ const getAllPatients = async (req, res) => {
     .skip(skip)
     .limit(limit);
 
-    const total = await PatientModel.countDocuments();
+    const total = await PatientModel.countDocuments(searchQuery);
     const totalPages = Math.ceil(total/ limit);
 
     res.status(200).send({
@@ -291,6 +291,7 @@ const updateDoctor = async (req, res) => {
       address,
       _id,
       availability,
+      activation_status,
       ...rest
     } = req.body;
 
@@ -335,6 +336,9 @@ const updateDoctor = async (req, res) => {
     availability
       ? (existingDoc.availability = availability)
       : existingDoc.availability;
+      activation_status
+      ? (existingDoc.activation_status ? activation_status : false)
+      : activation_status;
 
     try {
       // Save updated document
@@ -375,6 +379,7 @@ const updatePatient = async (req, res) => {
       address,
       medicalHistory,
       _id,
+      activation_status,
       ...rest
     } = req.body;
 
@@ -418,6 +423,9 @@ const updatePatient = async (req, res) => {
     medicalHistory
       ? (existingPatient.medicalHistory = medicalHistory)
       : existingPatient.medicalHistory;
+      activation_status
+      ? (existingPatient.activation_status ? activation_status : false)
+      : activation_status;
 
     try {
       // Save updated document
