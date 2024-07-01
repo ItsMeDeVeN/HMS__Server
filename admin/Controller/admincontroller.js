@@ -337,7 +337,7 @@ const updateDoctor = async (req, res) => {
       ? (existingDoc.availability = availability)
       : existingDoc.availability;
       activation_status
-      ? (existingDoc.activation_status ? activation_status : false)
+      ? (existingDoc.activation_status ? existingDoc.activation_status = activation_status : false)
       : activation_status;
 
     try {
@@ -453,6 +453,44 @@ const updatePatient = async (req, res) => {
   }
 };
 
+const activation = async (req, res) => {
+  try {
+    const { id } = req.body; // Extract id and role from request body
+
+    if (!id) {
+      return res.status(400).send({
+        message: "Id is required!",
+        status: 400,
+      });
+    }
+    let existingUser = await DoctorModel.findById(id) || await PatientModel.findById(id) ; // Use findById to fetch the doctor
+    if (!existingUser) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found.",
+      });
+    } else {
+      // Toggle the verified status
+      existingUser.activation_status = !existingUser.activation_status;
+      // Save the updated user
+      await existingUser.save();
+
+      return res.status(200).send({
+        success: true,
+        message: `${
+          existingUser.activation_status ? "Active" : "Inactive"
+        } Successfully!`,
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "An error occurred while updating the activation status.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllDoctors,
   getAllPatients,
@@ -463,4 +501,5 @@ module.exports = {
   getdetails,
   updateDoctor,
   updatePatient,
+  activation,
 };
