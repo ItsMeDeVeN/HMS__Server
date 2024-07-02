@@ -1,8 +1,9 @@
 const PatientModel = require("../model/PatientSchema");
 const DoctorModel = require("../model/DoctorSchema");
+const Appointment_Details = require("../model/AppointmentSchema");
 const { generateToken } = require("../middleware/middleware");
 // const { verified } = require("../admin/Controller/admincontroller");
-// const multer = require("multer"); 
+// const multer = require("multer");
 // const fs = require("fs");
 
 const registerpatient = async (req, res) => {
@@ -43,7 +44,11 @@ const registerpatient = async (req, res) => {
         message: "Email already exists.",
       });
     }
-    const patient = new PatientModel({ ...req.body, role:"Patient", activation_status: true});
+    const patient = new PatientModel({
+      ...req.body,
+      role: "Patient",
+      activation_status: true,
+    });
     await patient.save();
 
     res.status(201).send({
@@ -105,12 +110,17 @@ const registerdoctor = async (req, res) => {
 
     const existinguser = await DoctorModel.findOne({ email });
     if (existinguser) {
-      return res.status(409).send({ 
+      return res.status(409).send({
         success: false,
         message: "Email already exists.",
       });
     }
-    const doctor = new DoctorModel({ ...req.body, role:"Doctor",verified: false, activation_status: true});
+    const doctor = new DoctorModel({
+      ...req.body,
+      role: "Doctor",
+      verified: false,
+      activation_status: true,
+    });
     await doctor.save();
 
     res.status(201).send({
@@ -126,7 +136,7 @@ const registerdoctor = async (req, res) => {
     console.log(error);
   }
 };
-  
+
 const login = async (req, res) => {
   try {
     const { email, password, ...rest } = req.body;
@@ -141,7 +151,6 @@ const login = async (req, res) => {
         .status(400)
         .send({ message: "Password is a compulsion!!", status: 400 });
     }
-
 
     const existinguser = await DoctorModel.findOne({ email });
     if (existinguser) {
@@ -203,11 +212,11 @@ const login = async (req, res) => {
         });
       }
     }
-  } catch(error){
+  } catch (error) {
     return res.status(500).send({
       success: false,
       error: error,
-    })
+    });
   }
 };
 
@@ -258,5 +267,71 @@ const forgotpassword = async (req, res) => {
   }
 };
 
+const bookappointment = async (req, res) => {
+  try {
+    const { docid, docname, patientid, slotid, ...rest } = req.body;
 
-module.exports = { registerpatient, registerdoctor, login, forgotpassword };
+    if (!docid || !patientid || !slotid) {
+      return res.status(400).send({
+        success: false,
+        message: "All the ids are compulsory to proceed !!!",
+      });
+    }
+
+    const existingAppointment = await Appointment_Details.findOne({
+      docid: docid,
+      patientid: patientid,
+      slotid: slotid,
+    });
+
+    if (existingAppointment) {
+      return res.status(409).send({
+        success: false,
+        message: "Appointment already exists !!!",
+      });
+    }
+
+    const appointment = new Appointment_Details({ ...req.body });
+    await appointment.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Appointment Booked Successfully !!!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while registering an appointment",
+      errormsg: error.message, // Use error.message to get the specific error message
+    });
+    console.error("An error occurred while registering an appointment:", error);
+  }
+};
+
+const getallpatientappointments = async (req,res) => {
+  try{
+    const{patientid, ...rest} = req.body;
+    if(!patientid){
+      return res.status(400).send({
+        success: false,
+        message: "PateintId is required for fetching all the details"
+      })
+    }
+
+    const allappointments = await Appointment_Details.find({patientid});
+    res.status(200).send({
+      success: true,
+      message: "All appointments fetched successfully !!!",
+      appointments : allappointments,
+    });
+  }catch(error){
+    return res.status(500).send({
+      success: false,
+      message: "Error occured while fetching all appointments",
+      errormsg: error,
+    })
+  }
+};
+
+
+module.exports = { registerpatient, registerdoctor, login, forgotpassword, bookappointment, getallpatientappointments };
