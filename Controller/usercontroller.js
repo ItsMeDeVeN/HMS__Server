@@ -2,6 +2,7 @@ const PatientModel = require("../model/PatientSchema");
 const DoctorModel = require("../model/DoctorSchema");
 const Appointment_Details = require("../model/AppointmentSchema");
 const { generateToken } = require("../middleware/middleware");
+const sendMail = require("../utils/Mailer");
 // const { verified } = require("../admin/Controller/admincontroller");
 // const multer = require("multer");
 // const fs = require("fs");
@@ -10,6 +11,7 @@ const registerpatient = async (req, res) => {
   try {
     const { name, email, password, confirmpassword, contact, ...rest } =
       req.body;
+
     if (!name) {
       return res
         .status(400)
@@ -20,7 +22,6 @@ const registerpatient = async (req, res) => {
         .status(400)
         .send({ message: "Email is a compulsion!!", status: 400 });
     }
-
     if (!password) {
       return res
         .status(400)
@@ -37,13 +38,17 @@ const registerpatient = async (req, res) => {
         .send({ message: "Contact is a compulsion!!", status: 400 });
     }
 
-    const existinguser = await PatientModel.findOne({ email });
+    const existinguser =
+      (await PatientModel.findOne({ email })) ||
+      (await DoctorModel.findOne({ email }));
     if (existinguser) {
       return res.status(409).send({
         success: false,
         message: "Email already exists.",
+        user: existinguser,
       });
     }
+
     const patient = new PatientModel({
       ...req.body,
       role: "Patient",
@@ -51,15 +56,31 @@ const registerpatient = async (req, res) => {
     });
     await patient.save();
 
+    const subject = "HMS Registration Successful";
+    const text = `Congratulations ${name}, You are now successfully registered as a patient on HMS.`;
+
+    console.log("Attempting to send email...");
+    try {
+      await sendMail(email, subject, text);
+      console.log("Email sent successfully");
+    } catch (error) {
+      console.log("Error while sending email:", error);
+      return res.status(500).send({
+        success: false,
+        message: "Error while sending registration email",
+        errormsg: error.message,
+      });
+    }
+
     res.status(201).send({
       success: true,
-      message: "Patient registered Succesfully",
+      message: "Patient registered successfully",
     });
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Error while registaring Patient details",
-      errormsg: error,
+      message: "Error while registering Patient details",
+      errormsg: error.message,
     });
     console.log(error);
   }
@@ -108,7 +129,9 @@ const registerdoctor = async (req, res) => {
         .send({ message: "Department is a compulsion!!", status: 400 });
     }
 
-    const existinguser = await DoctorModel.findOne({ email });
+    const existinguser =
+      (await DoctorModel.findOne({ email })) ||
+      (await PatientModel.findOne({ email }));
     if (existinguser) {
       return res.status(409).send({
         success: false,
@@ -122,6 +145,22 @@ const registerdoctor = async (req, res) => {
       activation_status: true,
     });
     await doctor.save();
+
+    const subject = "HMS Registration Successful";
+    const text = `Congratulations ${name}, You are now successfully registered as a doctor on HMS.`;
+
+    console.log("Attempting to send email...");
+    try {
+      await sendMail(email, subject, text);
+      console.log("Email sent successfully");
+    } catch (error) {
+      console.log("Error while sending email:", error);
+      return res.status(500).send({
+        success: false,
+        message: "Error while sending registration email",
+        errormsg: error.message,
+      });
+    }
 
     res.status(201).send({
       success: true,
@@ -308,30 +347,127 @@ const bookappointment = async (req, res) => {
   }
 };
 
-const getallpatientappointments = async (req,res) => {
-  try{
-    const{patientid, ...rest} = req.body;
-    if(!patientid){
+const getallappointments = async (req, res) => {
+  try {
+    const { id, role, ...rest } = req.body;
+    if (!id) {
       return res.status(400).send({
         success: false,
-        message: "PateintId is required for fetching all the details"
-      })
+        message: "Id is required for fetching all the details",
+      });
     }
-
-    const allappointments = await Appointment_Details.find({patientid});
-    res.status(200).send({
-      success: true,
-      message: "All appointments fetched successfully !!!",
-      appointments : allappointments,
-    });
-  }catch(error){
+    if (role === "Patient") {
+      const allappointments = await Appointment_Details.find({ patientid: id });
+      res.status(200).send({
+        success: true,
+        message: "All appointments fetched successfully !!!",
+        appointments: allappointments,
+      });
+    } else if (role === "Doctor") {
+      const allappointments = await Appointment_Details.find({ docid: id });
+      res.status(200).send({
+        success: true,
+        message: "All appointments fetched successfully !!!",
+        appointments: allappointments,
+      });
+    }
+  } catch (error) {
     return res.status(500).send({
       success: false,
       message: "Error occured while fetching all appointments",
       errormsg: error,
-    })
+    });
   }
 };
 
+const updateappointmentstatus = async (req, res) => {
+  try {
+    const { id, ...rest } = req.body;
+    if (!id) {
+      return res.status(400).send({
+        success: false,
+        message: "Id is required to proceed !!!",
+      });
+    }
 
-module.exports = { registerpatient, registerdoctor, login, forgotpassword, bookappointment, getallpatientappointments };
+    const appointment = await Appointment_Details.findById(id);
+    if (!appointment) {
+      return res.status(404).send({
+        success: false,
+        message: "No such Appointment Slot found !!!",
+      });
+    }
+
+    if (appointment.appointmentstatus === false) {
+      appointment.appointmentstatus = true;
+      await appointment.save();
+      return res.status(200).send({
+        success: true,
+        message: "Appointment Approved Successfully !!!",
+        appointment: appointment,
+      });
+    } else if (appointment.appointmentstatus === true) {
+      return res.status(409).send({
+        success: false,
+        message: "Appointment is already approved.",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error while approving the appointment !!!",
+      errormsg: error.message,
+    });
+  }
+};
+
+const deleteappointment = async (req, res) => {
+  try {
+    const { id, ...rest } = req.body;
+    if (!id) {
+      return res.status(400).send({
+        success: false,
+        message: "Id is required to proceed !!!",
+      });
+    }
+
+    const appointment = await Appointment_Details.findById(id);
+    if (!appointment) {
+      return res.status(404).send({
+        success: false,
+        message: "No appointment found!!!",
+      });
+    }
+
+    const deleteData = await appointment.deleteOne();
+    if (deleteData) {
+      return res.status(200).send({
+        success: true,
+        message: "Appointment Deleted Successfully !!!",
+      });
+    } else {
+      return res.status(404).send({
+        success: false,
+        message: "Appoinment can't be deleted",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "An error occured while deleting appointment!!!",
+      errormsg: error,
+    });
+  }
+};
+module.exports = {
+  registerpatient,
+  registerdoctor,
+  login,
+  forgotpassword,
+  bookappointment,
+  getallappointments,
+  updateappointmentstatus,
+  deleteappointment,
+};

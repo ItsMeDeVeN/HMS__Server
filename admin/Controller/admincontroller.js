@@ -1,8 +1,7 @@
 const PatientModel = require("../../model/PatientSchema");
 const DoctorModel = require("../../model/DoctorSchema");
 const AdminModel = require("../model/AdminSchema");
-const {generateToken} = require("../middleware/adminmiddleware")
-
+const { generateToken } = require("../middleware/adminmiddleware");
 
 const registeradmin = async (req, res) => {
   try {
@@ -74,7 +73,7 @@ const adminlogin = async (req, res) => {
       success: true,
       message: "Admin Logged in succesfully 🥳🥳",
       admin: existingadmin,
-      token: token
+      token: token,
     });
   } catch (error) {
     res.status(500).send({
@@ -92,18 +91,20 @@ const getAllPatients = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const searchQuery = req.query.search ? {
-      $or: [
-        { name: { $regex: req.query.search, $options: 'i' } }, // Case-insensitive search on doctor's name
-        ]
-    } : {};
+    const searchQuery = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: "i" } }, // Case-insensitive search on doctor's name
+          ],
+        }
+      : {};
 
     const allPatients = await PatientModel.find(searchQuery)
-    .skip(skip)
-    .limit(limit);
+      .skip(skip)
+      .limit(limit);
 
     const total = await PatientModel.countDocuments(searchQuery);
-    const totalPages = Math.ceil(total/ limit);
+    const totalPages = Math.ceil(total / limit);
 
     res.status(200).send({
       success: true,
@@ -111,7 +112,7 @@ const getAllPatients = async (req, res) => {
       patients: allPatients,
       page,
       totalPages,
-      total
+      total,
     });
   } catch (error) {
     res.status(500).send({
@@ -129,17 +130,19 @@ const getAllDoctors = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const searchQuery = req.query.search ? {
-      $or: [
-        { name: { $regex: req.query.search, $options: 'i' } }, // Case-insensitive search on doctor's name
-        ]
-    } : {};
+    const searchQuery = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: "i" } }, // Case-insensitive search on doctor's name
+          ],
+        }
+      : {};
     const allDoctors = await DoctorModel.find(searchQuery)
-    .skip(skip)
-    .limit(limit);
+      .skip(skip)
+      .limit(limit);
 
     const total = await DoctorModel.countDocuments(searchQuery);
-    const totalPages = Math.ceil(total/ limit);
+    const totalPages = Math.ceil(total / limit);
 
     res.status(200).send({
       success: true,
@@ -147,7 +150,7 @@ const getAllDoctors = async (req, res) => {
       doctors: allDoctors,
       page,
       totalPages,
-      total
+      total,
     });
   } catch (error) {
     res.status(500).send({
@@ -230,12 +233,12 @@ const deleteUser = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).send({
+    console.log(error);
+    return res.status(500).send({
       success: false,
       message: "Error while deleting the details",
       errormsg: error,
     });
-    console.log(error);
   }
 };
 
@@ -336,8 +339,10 @@ const updateDoctor = async (req, res) => {
     availability
       ? (existingDoc.availability = availability)
       : existingDoc.availability;
-      activation_status
-      ? (existingDoc.activation_status ? existingDoc.activation_status = activation_status : false)
+    activation_status
+      ? existingDoc.activation_status
+        ? (existingDoc.activation_status = activation_status)
+        : false
       : activation_status;
 
     try {
@@ -423,8 +428,10 @@ const updatePatient = async (req, res) => {
     medicalHistory
       ? (existingPatient.medicalHistory = medicalHistory)
       : existingPatient.medicalHistory;
-      activation_status
-      ? (existingPatient.activation_status ? activation_status : false)
+    activation_status
+      ? existingPatient.activation_status
+        ? activation_status
+        : false
       : activation_status;
 
     try {
@@ -463,7 +470,8 @@ const activation = async (req, res) => {
         status: 400,
       });
     }
-    let existingUser = await DoctorModel.findById(id) || await PatientModel.findById(id) ; // Use findById to fetch the doctor
+    let existingUser =
+      (await DoctorModel.findById(id)) || (await PatientModel.findById(id)); // Use findById to fetch the doctor
     if (!existingUser) {
       return res.status(404).send({
         success: false,
