@@ -1,5 +1,6 @@
 const express = require('express');
-const { registerdoctor, registerpatient, login, forgotpassword, bookappointment, getallappointments, updateappointmentstatus, deleteappointment} = require('../Controller/usercontroller')
+const { registerdoctor, registerpatient, login, forgotpassword,} = require('../Controller/usercontroller')
+const { bookappointment, getallappointments, updateappointmentstatus, deleteappointment, allappointmentsdetails} = require("../Controller/appointmentcontroller")
 const router = express.Router();
 
 router.post('/registerdoctor', registerdoctor)
@@ -10,11 +11,6 @@ router.post('/bookappointment', bookappointment)
 router.post('/getallappointments', getallappointments)
 router.post('/updateappointmentstatus', updateappointmentstatus)
 router.post('/deleteappointment', deleteappointment)
-// router.delete('/delete', deleteUser)
-// router.get('/alluser', getAllUser);
-// router.put('/updatedetails', updateDetails);
-// router.put('/updatepassword', updatePassword);
+router.post('/allappointmentsdetails', allappointmentsdetails)
 
 module.exports = router;
-
-// middleware 

@@ -1,6 +1,7 @@
 const PatientModel = require("../../model/PatientSchema");
 const DoctorModel = require("../../model/DoctorSchema");
 const AdminModel = require("../model/AdminSchema");
+const AppointmentModel = require("../../model/AppointmentSchema")
 const { generateToken } = require("../middleware/adminmiddleware");
 
 const registeradmin = async (req, res) => {
@@ -499,6 +500,45 @@ const activation = async (req, res) => {
   }
 };
 
+const getallstats = async(req,res) => {
+  try{
+    const allpatients = await PatientModel.countDocuments();
+    const activepatients = await PatientModel.countDocuments({activation_status: true});
+    const inactivepatients = await PatientModel.countDocuments({activation_status: false});
+
+    const alldocs = await DoctorModel.countDocuments();
+    const verifiedocs = await DoctorModel.countDocuments({verified: true});
+    const unverifiedocs = await DoctorModel.countDocuments({verified: false});
+    const activedocs = await DoctorModel.countDocuments({activation_status: true});
+    const inactivedocs = await DoctorModel.countDocuments({activation_status: false});
+
+    const allappointments = await AppointmentModel.countDocuments();
+    const approvedappointments = await AppointmentModel.countDocuments({appointmentstatus: true});
+    const pendingappointments = await AppointmentModel.countDocuments({appointmentstatus: false});
+
+    res.status(200).send({
+      success: true,
+      message: "All Stats fetched successfully!!!",
+      allpatients: allpatients,
+      activepatients: activepatients,
+      inactivepatients: inactivepatients,
+      alldocs: alldocs,
+      verifiedocs: verifiedocs,
+      unverifiedocs: unverifiedocs,
+      activedocs: activedocs,
+      inactivedocs: inactivedocs,
+      allappointments: allappointments,
+      approvedappointments: approvedappointments,
+      pendingappointments: pendingappointments,
+    })
+  }catch(error){
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Something went Wrong !!!",
+    })
+  }
+}
 module.exports = {
   getAllDoctors,
   getAllPatients,
@@ -510,4 +550,5 @@ module.exports = {
   updateDoctor,
   updatePatient,
   activation,
+  getallstats,
 };
