@@ -4,7 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const connectDB = require("./Config/connectDB");
 const userRoutes = require("./routes/AllRoutes");
-const adminRoutes = require("./admin/adminroutes")
+const adminRoutes = require("./admin/adminroutes");
 const app = express();
 const port = 3000;
 

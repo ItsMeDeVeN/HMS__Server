@@ -2,9 +2,6 @@ const PatientModel = require("../model/PatientSchema");
 const DoctorModel = require("../model/DoctorSchema");
 const { generateToken } = require("../middleware/middleware");
 const sendMail = require("../utils/Mailer");
-// const { verified } = require("../admin/Controller/admincontroller");
-// const multer = require("multer");
-// const fs = require("fs");
 
 const registerpatient = async (req, res) => {
   try {
@@ -304,7 +301,6 @@ const forgotpassword = async (req, res) => {
     console.error(error);
   }
 };
-
 
 module.exports = {
   registerpatient,

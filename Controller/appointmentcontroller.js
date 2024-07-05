@@ -168,17 +168,30 @@ const allappointmentsdetails = async (req, res) => {
     }
 
     const totaldocs = await DoctorModel.countDocuments();
-    const caridologydoc = await DoctorModel.countDocuments({department: "Cardiology"});
-    const dermatologydoc = await DoctorModel.countDocuments({department: "Dermatology"});
-    const neurologydoc = await DoctorModel.countDocuments({department: "Neurology"});
-    const oncologydoc = await DoctorModel.countDocuments({department: "Oncology"});
-    const pediatricdoc = await DoctorModel.countDocuments({department: "Pediatrics"});
-    const radiologydoc = await DoctorModel.countDocuments({department: "Radiology"});
-    const surgerydoc = await DoctorModel.countDocuments({department: "Surgery"});
-    const gmdoc = await DoctorModel.countDocuments({department: "General Medicine"});
-
-
-
+    const caridologydoc = await DoctorModel.countDocuments({
+      department: "Cardiology",
+    });
+    const dermatologydoc = await DoctorModel.countDocuments({
+      department: "Dermatology",
+    });
+    const neurologydoc = await DoctorModel.countDocuments({
+      department: "Neurology",
+    });
+    const oncologydoc = await DoctorModel.countDocuments({
+      department: "Oncology",
+    });
+    const pediatricdoc = await DoctorModel.countDocuments({
+      department: "Pediatrics",
+    });
+    const radiologydoc = await DoctorModel.countDocuments({
+      department: "Radiology",
+    });
+    const surgerydoc = await DoctorModel.countDocuments({
+      department: "Surgery",
+    });
+    const gmdoc = await DoctorModel.countDocuments({
+      department: "General Medicine",
+    });
 
     const existinguser =
       (await Appointment_Details.findOne({ docid: id })) ||
@@ -232,7 +245,6 @@ const allappointmentsdetails = async (req, res) => {
       surgerydoc: surgerydoc,
       gmdoc: gmdoc,
     });
-
   } catch (error) {
     console.log(error);
     return res.status(500).send({
